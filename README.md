@@ -1,5 +1,3 @@
-CyShield
-AI-Powered Unified Cybersecurity Platform
 CyShield is an intelligent cybersecurity platform designed to provide end-to-end protection against modern digital threats. It integrates Vulnerability Scanning, Ransomware Detection, and Fraud Detection into a single AI-driven system for proactive and adaptive security.
 🚀 Features
 🔍 Vulnerability Scanning
