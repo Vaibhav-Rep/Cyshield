@@ -1,0 +1,27 @@
+{
+  "notes": "This is a simulated scan result for demonstration. Do not run against external hosts without permission.",
+  "os_guess": "Unknown",
+  "scan_status": "completed",
+  "target": "127.0.0.1",
+  "timestamp": "2025-10-27 21:33:07",
+  "vulnerabilities": [
+    {
+      "port": 21,
+      "service": "ftp",
+      "severity": "low",
+      "version": "vsftpd 3.0.3"
+    },
+    {
+      "port": 443,
+      "service": "https",
+      "severity": "low",
+      "version": "Apache 2.4.54"
+    },
+    {
+      "port": 3306,
+      "service": "mysql",
+      "severity": "medium",
+      "version": "MySQL 5.7"
+    }
+  ]
+}

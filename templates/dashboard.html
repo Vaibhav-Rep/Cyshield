@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyShield Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans transition-all duration-500" id="body">
+
+  <!-- Navbar -->
+  <nav class="bg-gray-800 p-4 flex justify-between items-center shadow-md">
+    <h1 class="text-xl font-bold text-green-400" style="text-shadow: 0 0 10px #024325ff, 0 0 20px #00cc66;">🛡️ CyShield Dashboard</h1>
+    <div class="flex items-center space-x-4">
+      <button onclick="toggleTheme()" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600 transition">🌓</button>
+      <a href="/" class="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition">Logout</a>
+    </div>
+  </nav>
+
+  <!-- Charts Section -->
+  <section class="p-8 grid md:grid-cols-3 gap-6">
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">CPU Usage</h2>
+      <canvas id="cpuChart"></canvas>
+    </div>
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">Network Traffic</h2>
+      <canvas id="networkChart"></canvas>
+    </div>
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">Threat Level</h2>
+      <canvas id="threatChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Dashboard Modules -->
+  <section class="p-8 grid md:grid-cols-3 gap-6">
+
+    <!-- 🔁 Vulnerability Scanner (UPGRADED: IP scan + file upload + Download) -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">Vulnerability Scanner</h2>
+      <p class="text-gray-400 mb-4">Scan an IP address (demo or real if allowed) or upload a file to scan it.</p>
+
+      <!-- IP Scan area -->
+      <div class="flex space-x-2 mb-3">
+        <input id="ipAddress" type="text" placeholder="Enter IP (e.g., 127.0.0.1)" class="p-2 rounded w-full bg-gray-700 text-white focus:ring-2 focus:ring-blue-500" />
+        <select id="scanMode" class="p-2 bg-gray-700 rounded text-white">
+          <option value="demo">Demo</option>
+          <option value="real">Real (nmap)</option>
+        </select>
+        <button onclick="scanIP()" class="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition">Scan</button>
+      </div>
+
+      <p class="text-sm text-yellow-400 mb-3">⚠️ Demo mode is safe. Real mode requires nmap installed on server and allowlist configured.</p>
+
+      <!-- File upload area -->
+      <div class="mb-3">
+        <label class="block text-gray-400 text-sm mb-1">Upload file to scan</label>
+        <input type="file" id="fileUpload" class="block w-full text-sm text-gray-300 mb-2 border border-gray-600 rounded bg-gray-700" />
+        <div class="flex space-x-2">
+          <button onclick="scanFile()" class="bg-indigo-600 px-4 py-2 rounded text-white hover:bg-indigo-700">Upload & Scan</button>
+          <button onclick="clearUploads()" class="bg-gray-600 px-4 py-2 rounded text-white hover:bg-gray-500">Clear</button>
+        </div>
+      </div>
+
+      <!-- Progress + Download -->
+      <div class="mt-2 flex justify-between items-center">
+        <div style="flex:1; margin-right:10px;">
+          <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div id="scanProgress" class="h-3 bg-blue-500 w-0 transition-all duration-500"></div>
+          </div>
+          <div id="scanStatus" class="text-sm text-gray-300 mt-2"></div>
+        </div>
+        <button onclick="downloadReport()" class="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition ml-3">Download Report</button>
+      </div>
+
+      <!-- Results -->
+      <pre id="scanResultBox" class="bg-gray-700 mt-4 p-3 rounded-lg text-sm overflow-auto max-h-60"></pre>
+    </div>
+
+    <!-- Ransomware Monitor -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">Ransomware Monitor</h2>
+      <p class="text-gray-400 mb-4">Monitoring file system activity in real-time (simulated).</p>
+      <button onclick="checkRansomware()" class="bg-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition">Check Status</button>
+      <p id="ransomwareStatus" class="mt-4 text-sm text-gray-300"></p>
+    </div>
+
+    <!-- Fraud Detection -->
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300">
+      <h2 class="text-xl font-semibold mb-4 text-blue-300">Fraud Detection (ML)</h2>
+      <p class="text-gray-400 mb-4">Enter transaction amount to check for potential fraud.</p>
+      <input type="number" id="amount" placeholder="Transaction Amount" class="p-2 w-full rounded bg-gray-700 text-white mb-3" />
+      <button onclick="predictFraud()" class="bg-purple-600 px-4 py-2 rounded-lg hover:bg-purple-700 transition">Analyze</button>
+
+      <div class="mt-4">
+        <div class="bg-gray-700 rounded-full h-4 w-full overflow-hidden">
+          <div id="fraudBar" class="h-4 bg-green-500 w-0 transition-all duration-700 ease-out"></div>
+        </div>
+        <p id="fraudResult" class="mt-3 text-sm text-gray-300"></p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Alerts -->
+  <section class="p-8">
+    <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300">
+      <h2 class="text-xl font-semibold mb-4 text-red-400">🔔 Real-Time Security Alerts</h2>
+      <ul id="alertFeed" class="space-y-2 max-h-56 overflow-y-auto text-sm"></ul>
+    </div>
+  </section>
+
+  <!-- Chatbot -->
+  <div id="chatbot" class="fixed bottom-4 right-4 w-72 bg-gray-800 text-white rounded-2xl shadow-lg flex-col hidden">
+    <div class="bg-blue-600 p-3 rounded-t-2xl flex justify-between items-center">
+      <span class="font-semibold">🤖 CyBot - Security Assistant</span>
+      <button onclick="toggleChat()" class="text-white">✖</button>
+    </div>
+    <div id="chatMessages" class="p-3 h-64 overflow-y-auto text-sm space-y-2"></div>
+    <div class="p-3 flex space-x-2">
+      <input id="chatInput" type="text" placeholder="Ask about security..." class="flex-1 p-2 rounded bg-gray-700 text-white text-sm" />
+      <button onclick="sendMessage()" class="bg-blue-600 px-3 rounded hover:bg-blue-700">➤</button>
+    </div>
+  </div>
+
+  <button onclick="toggleChat()" id="chatButton" class="fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-full shadow-lg text-xl hover:bg-blue-700">💬</button>
+
+  <script>
+    // ---------------- Utilities ----------------
+    function setProgress(percent) {
+      document.getElementById('scanProgress').style.width = percent + '%';
+    }
+    function saveLastReport(obj) {
+      localStorage.setItem('cyshield_last_report', JSON.stringify(obj));
+    }
+    function loadLastReport() {
+      return JSON.parse(localStorage.getItem('cyshield_last_report') || 'null');
+    }
+
+    // ---------------- IP Scan ----------------
+    async function scanIP() {
+      const ip = document.getElementById('ipAddress').value.trim();
+      const mode = document.getElementById('scanMode') ? document.getElementById('scanMode').value : 'demo';
+      const resultBox = document.getElementById('scanResultBox');
+      const status = document.getElementById('scanStatus');
+
+      if (!ip) { alert('Please enter an IP address'); return; }
+
+      // reset UI
+      resultBox.textContent = '';
+      status.textContent = `Starting ${mode} scan for ${ip}...`;
+      setProgress(10);
+
+      try {
+        if (mode === 'demo') {
+          setProgress(30);
+          status.textContent = 'Running demo scan...';
+          const res = await fetch(`/api/scan_ip_demo?ip=${encodeURIComponent(ip)}`);
+          setProgress(60);
+          const data = await res.json();
+          setProgress(90);
+          resultBox.textContent = JSON.stringify(data, null, 2);
+          saveLastReport({ type: 'ip-demo', target: ip, result: data, time: new Date().toISOString() });
+          status.textContent = 'Demo scan completed.';
+          setProgress(100);
+          setTimeout(()=> setProgress(0), 700);
+          return;
+        }
+
+        // REAL mode
+        setProgress(25);
+        status.textContent = 'Requesting server to run nmap...';
+        const res = await fetch(`/api/scan_ip?ip=${encodeURIComponent(ip)}`);
+        setProgress(55);
+        if (!res.ok) {
+          const err = await res.json().catch(()=>({error: res.statusText}));
+          status.textContent = `Scan error: ${err.error || res.statusText}`;
+          setProgress(0);
+          return;
+        }
+        const data = await res.json();
+        setProgress(85);
+        resultBox.textContent = JSON.stringify(data, null, 2);
+        saveLastReport({ type: 'ip-real', target: ip, result: data, time: new Date().toISOString() });
+        status.textContent = 'Real scan completed.';
+        setProgress(100);
+        setTimeout(()=> setProgress(0), 700);
+      } catch (e) {
+        status.textContent = 'Error: ' + e.message;
+        setProgress(0);
+      }
+    }
+
+    // ---------------- File Upload Scan ----------------
+    async function scanFile() {
+      const fileInput = document.getElementById('fileUpload');
+      const resultBox = document.getElementById('scanResultBox');
+      const status = document.getElementById('scanStatus');
+
+      if (!fileInput.files.length) { alert('Choose a file to upload'); return; }
+
+      const file = fileInput.files[0];
+      const form = new FormData();
+      form.append('file', file);
+
+      status.textContent = 'Uploading and scanning file...';
+      setProgress(20);
+      resultBox.textContent = '';
+
+      try {
+        const res = await fetch('/api/upload_scan', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!res.ok) {
+          status.textContent = 'Upload/scan failed: ' + (data.error || res.statusText);
+          setProgress(0);
+          return;
+        }
+        setProgress(70);
+        // display result nicely
+        let out = `Filename: ${data.filename}\nSeverity: ${data.severity}\nScore: ${data.score}\nEntropy: ${data.entropy}\nSize: ${data.size} bytes\nReasons: ${data.reasons.length ? data.reasons.join(', ') : 'None'}`;
+        if (data.quarantined_to) out += `\nQuarantined To: ${data.quarantined_to}`;
+        resultBox.textContent = out;
+        saveLastReport({ type: 'file-scan', filename: data.filename, result: data, time: new Date().toISOString() });
+        status.textContent = 'File scan complete.';
+        setProgress(100);
+        setTimeout(()=> setProgress(0), 700);
+      } catch (err) {
+        status.textContent = 'Error uploading/scanning: ' + err.message;
+        setProgress(0);
+      }
+    }
+
+    function clearUploads() {
+      document.getElementById('fileUpload').value = '';
+      document.getElementById('scanResultBox').textContent = '';
+      document.getElementById('scanStatus').textContent = '';
+      setProgress(0);
+    }
+
+    // ---------------- Download Report ----------------
+    function downloadReport() {
+      const saved = loadLastReport();
+      const blob = new Blob([JSON.stringify(saved || { message: 'No report available' }, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `cyshield_report_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+      link.click();
+    }
+
+    // ---------------- Ransomware (simulated) ----------------
+    async function checkRansomware() {
+      try {
+        const res = await fetch('/api/ransomware');
+        const data = await res.json();
+        document.getElementById('ransomwareStatus').textContent = data.status;
+      } catch (e) {
+        document.getElementById('ransomwareStatus').textContent = 'Error checking ransomware status';
+      }
+    }
+
+    // ---------------- Fraud Prediction ----------------
+    async function predictFraud() {
+      const amount = document.getElementById('amount').value;
+      const result = document.getElementById('fraudResult');
+      const bar = document.getElementById('fraudBar');
+
+      if (!amount) return alert('Please enter an amount!');
+      result.textContent = '🔍 Analyzing...';
+      bar.style.width = '0%';
+
+      try {
+        const res = await fetch(`/api/fraud?amount=${encodeURIComponent(amount)}`);
+        const data = await res.json();
+        // try to extract % from message
+        const match = (data.message || '').match(/([0-9.]+)%/);
+        let percent = match ? parseFloat(match[1]) : Math.min(amount / 20000 * 100, 100);
+        bar.style.width = percent + '%';
+        bar.style.backgroundColor = percent < 40 ? 'rgb(34,197,94)' : percent < 75 ? 'rgb(234,179,8)' : 'rgb(239,68,68)';
+        result.textContent = `${data.message} (Risk: ${percent.toFixed(0)}%)`;
+      } catch (e) {
+        result.textContent = 'Error analyzing transaction';
+      }
+    }
+
+    // ---------------- Alerts (demo feed) ----------------
+    const demoAlerts = [
+      '🔥 Suspicious login attempt blocked!',
+      '⚠️ 2 vulnerabilities found.',
+      '🧠 ML model retrained successfully.',
+      '💾 Backup completed.',
+      '🔒 Firewall rules optimized.',
+      '🚨 Brute-force attempt stopped!'
+    ];
+    function addAlert() {
+      const feed = document.getElementById('alertFeed');
+      const li = document.createElement('li');
+      const msg = demoAlerts[Math.floor(Math.random() * demoAlerts.length)];
+      li.textContent = `${new Date().toLocaleTimeString()} - ${msg}`;
+      li.classList.add('bg-gray-700', 'p-2', 'rounded');
+      feed.prepend(li);
+      if (feed.children.length > 12) feed.removeChild(feed.lastChild);
+    }
+    setInterval(addAlert, 3000);
+
+    // ---------------- Chatbot ----------------
+    function toggleChat() {
+      document.getElementById('chatbot').classList.toggle('hidden');
+      document.getElementById('chatButton').classList.toggle('hidden');
+    }
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+      const box = document.getElementById('chatMessages');
+      box.innerHTML += `<div>🧑‍💻 You: ${msg}</div>`;
+      box.innerHTML += `<div>🤖 CyBot: ${getBotResponse(msg)}</div>`;
+      box.scrollTop = box.scrollHeight;
+      input.value = '';
+    }
+    function getBotResponse(msg) {
+      msg = msg.toLowerCase();
+      if (msg.includes('ransomware')) return 'Ransomware encrypts files — keep backups & endpoint protection.';
+      if (msg.includes('sql')) return 'Use parameterized queries to avoid SQL injection.';
+      if (msg.includes('fraud')) return 'Fraud detection uses ML to flag anomalous transactions.';
+      if (msg.includes('scan')) return 'Use demo mode for safe scans; real scans require permission.';
+      return "I'm learning — try asking about 'scan', 'ransomware', or 'fraud'.";
+    }
+
+    // ---------------- Charts ----------------
+    function randomData(max) { return Math.floor(Math.random() * max); }
+    function createChart(id, label, color) {
+      const ctx = document.getElementById(id).getContext('2d');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 10 }, (_, i) => i),
+          datasets: [{ label, data: Array.from({ length: 10 }, () => randomData(100)), borderColor: color, fill: false, tension: 0.3 }]
+        },
+        options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+      });
+    }
+    const cpuChart = createChart('cpuChart', 'CPU %', 'rgb(59,130,246)');
+    const netChart = createChart('networkChart', 'Network %', 'rgb(34,197,94)');
+    const threatChart = createChart('threatChart', 'Threat Level %', 'rgb(239,68,68)');
+    setInterval(() => [cpuChart, netChart, threatChart].forEach(c => {
+      c.data.datasets[0].data.shift();
+      c.data.datasets[0].data.push(randomData(100));
+      c.update();
+    }), 2000);
+
+    // ---------------- Theme Toggle ----------------
+    function toggleTheme() {
+      const b = document.getElementById('body');
+      b.classList.toggle('bg-gray-900');
+      b.classList.toggle('text-white');
+      b.classList.toggle('bg-gray-100');
+      b.classList.toggle('text-black');
+    }
+  </script>
+</body>
+</html>  
+
